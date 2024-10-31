@@ -1,0 +1,26 @@
+.container {
+    display: flex;
+}
+
+main {
+    margin-left: 250px;
+    flex: 1;
+}
+
+.chart {
+    margin: 32px 0 0 32px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+
+    &-item {
+      
+        h2 {
+            margin-bottom: 8px;
+        }
+    }
+
+    &-item:nth-child(5) {
+        grid-column: span 2;
+    }
+}
