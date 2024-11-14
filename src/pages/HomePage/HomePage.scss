@@ -10,7 +10,7 @@ main {
 .chart {
     margin: 32px 0 0 32px;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(1, 1fr);
     gap: 20px;
 
     &-item {
@@ -18,9 +18,5 @@ main {
         h2 {
             margin-bottom: 8px;
         }
-    }
-
-    &-item:nth-child(5) {
-        grid-column: span 2;
     }
 }
