@@ -1,100 +1,68 @@
 import React, { useEffect, useState } from "react";
 import Plot from "react-plotly.js";
-import Papa from "papaparse";
 
 const SeasonalChart = () => {
   const [seasonalData, setSeasonalData] = useState([]);
 
   useEffect(() => {
-    Papa.parse("/crude_oil_imports.csv", {
-      download: true,
-      header: true,
-      complete: (result) => {
-        const csvData = result.data;
+    // Fetch seasonal data from API
+    fetch("http://localhost:8000/api/seasonal")
+      .then((response) => response.json())
+      .then((data) => {
+        const seasonal = data.seasonal;
 
-        // Khởi tạo đối tượng để tích lũy tổng lượng nhập khẩu và đếm số lần xuất hiện của từng tháng
-        const monthlyTotals = {};
-        const monthlyCounts = {};
+        const currentYear = new Date().getFullYear();
+        // const previousYear = currentYear - 1;
 
-        csvData.forEach((row) => {
-          const month = row.Period.slice(5, 7); // Lấy phần tháng (MM)
-          const year = row.Period.slice(0, 4); // Lấy phần năm (YYYY)
-          const quantity = parseFloat(row.Quantity); // Chuyển đổi sang triệu thùng
-
-          // Khởi tạo nếu chưa có tháng trong đối tượng
-          if (!monthlyTotals[month]) {
-            monthlyTotals[month] = 0;
-            monthlyCounts[month] = new Set();
-          }
-
-          monthlyTotals[month] += quantity;
-          monthlyCounts[month].add(year); // Thêm năm vào Set để đếm số năm duy nhất cho mỗi tháng
+        const filteredData = seasonal.filter((item) => {
+          const year = new Date(item.date).getFullYear();
+          return year === currentYear;
         });
 
-        // Tính trung bình cho mỗi tháng
-        const averageMonthlyQuantities = {};
-        for (let month = 1; month <= 12; month++) {
-          const monthKey = String(month).padStart(2, "0");
-          const yearCount = monthlyCounts[monthKey].size; // Số năm duy nhất có dữ liệu cho tháng này
-          averageMonthlyQuantities[monthKey] =
-            monthlyTotals[monthKey] / yearCount; // Tính trung bình
-        }
-
-        // Nhóm các tháng vào 4 mùa và tính trung bình lượng nhập khẩu cho từng mùa
-        const seasonalTotals = {
-          Spring:
-            (averageMonthlyQuantities["03"] +
-              averageMonthlyQuantities["04"] +
-              averageMonthlyQuantities["05"]) /
-            3,
-          Summer:
-            (averageMonthlyQuantities["06"] +
-              averageMonthlyQuantities["07"] +
-              averageMonthlyQuantities["08"]) /
-            3,
-          Fall:
-            (averageMonthlyQuantities["09"] +
-              averageMonthlyQuantities["10"] +
-              averageMonthlyQuantities["11"]) /
-            3,
-          Winter:
-            (averageMonthlyQuantities["12"] +
-              averageMonthlyQuantities["01"] +
-              averageMonthlyQuantities["02"]) /
-            3,
-        };
-
-        const seasons = ["Winter", "Spring", "Summer", "Fall"];
-        const averageQuantities = seasons.map(
-          (season) => seasonalTotals[season]
-        );
+        // Chuyển dữ liệu ngày và giá trị thành mảng thời gian và giá trị tương ứng
+        const dates = filteredData.map((item) => item.date);
+        const values = filteredData.map((item) => item.value);
 
         setSeasonalData([
           {
-            x: seasons,
-            y: averageQuantities,
-            type: "bar",
-            marker: { color: ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728"] },
+            x: dates,
+            y: values,
+            type: "scatter",
+            mode: "lines+markers",
+            marker: {
+              color: "black",
+              size: 5,
+            },
+            line: {
+              color: "rgba(30,144,255,0.8)",
+              width: 2,
+            },
           },
         ]);
-      },
-    });
+      })
+      .catch((error) => {
+        console.error("Error fetching seasonal data:", error);
+      });
   }, []);
 
   return (
     <div className="chart-item">
-      <h2>Biểu đồ Seasonal - Xu hướng mùa vụ theo mùa</h2>
+      <h2>Biểu đồ Seasonal - Xu hướng theo chu kỳ</h2>
       <Plot
         data={seasonalData}
         layout={{
-          title: "Lượng Nhập Khẩu Trung Bình Theo Mùa (Triệu Thùng)",
-          xaxis: { title: "Mùa" },
-          yaxis: {
-            title: "Lượng nhập khẩu trung bình (triệu thùng)",
+          title: "Biểu Đồ Xu Hướng Seasonal",
+          xaxis: {
+            title: "Ngày",
+            tickangle: -45,
+            tickformat: "%Y-%m-%d",
           },
-          width: 1200,
-          height: 450,
-          bargap: 0.6,
+          yaxis: {
+            title: "Giá trị Seasonal",
+          },
+          width: 1400,
+          height: 400,
+          showlegend: false,
         }}
       />
     </div>

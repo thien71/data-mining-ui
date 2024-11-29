@@ -1,22 +1,44 @@
 .container {
-    display: flex;
+    // display: flex;
+    max-width: 1480px;
+    margin: 0 auto;
+
 }
 
 main {
-    margin-left: 250px;
-    flex: 1;
+    margin: 0 auto;
+    // margin-left: 250px;
+    // flex: 1;
 }
 
 .chart {
-    margin: 32px 0 0 32px;
+    margin: 32px 0;
     display: grid;
     grid-template-columns: repeat(1, 1fr);
     gap: 20px;
 
     &-item {
-      
+        position: relative;
+        margin: 0 auto;
+
         h2 {
             margin-bottom: 8px;
+        }
+    }
+
+    &-button {
+        position: absolute;
+        top: 50px;
+        left: 8px;
+        width: 100%;
+        z-index: 10;
+
+        & button:first-child {
+            margin-right: 8px;
+        }
+
+        & button:last-child {
+
         }
     }
 }

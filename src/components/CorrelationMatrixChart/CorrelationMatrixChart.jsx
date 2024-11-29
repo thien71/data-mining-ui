@@ -3,44 +3,55 @@ import Plot from "react-plotly.js";
 
 function CorrelationMatrixChart() {
   const [correlationData, setCorrelationData] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Tải dữ liệu từ file JSON trong thư mục public
-    fetch("/correlation_matrix.json")
-      .then((response) => response.json())
+    // Gọi API để lấy dữ liệu ma trận tương quan
+    fetch("http://localhost:8000/api/correlation_matrix")
+      .then((response) => {
+        // Kiểm tra xem phản hồi có phải là JSON không
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json(); // Phản hồi phải là JSON
+      })
       .then((data) => {
-        // Đặt nhãn theo thứ tự mong muốn
-        const labels = ["Quantity", "Origin ID", "Destination ID", "Grade ID"];
+        console.log(data); // Log dữ liệu API để kiểm tra
 
-        // Đảo ngược thứ tự nhãn trên trục Y để tạo đường chéo từ trái trên xuống phải dưới
-        const labelsY = [...labels].reverse();
+        let labels = ["capacity", "outage", "percent_outage"];
 
-        // Tạo zValues theo thứ tự của labels (không cần đảo ngược dữ liệu)
-        const zValues = labelsY.map((row) =>
-          labels.map((col) => data[row][col])
+        // Tạo zValues từ dữ liệu API
+        const zValues = labels.map((row) =>
+          labels.map((col) => {
+            return data[col][row];
+          })
         );
 
         setCorrelationData({
-          z: zValues,
           x: labels,
-          y: labelsY,
+          y: labels,
+          z: zValues,
           type: "heatmap",
-          colorscale: "coolwarm", // Đặt bảng màu coolwarm
+          colorscale: "coolwarm",
           colorbar: {
             title: "Correlation",
             titleside: "right",
           },
-          text: zValues.map((row) => row.map((value) => value.toFixed(2))),
-          texttemplate: "%{text}", // Hiển thị giá trị trong các ô
-          hoverinfo: "z", // Hiển thị giá trị khi di chuột
+          text: zValues.map((row) => row.map((value) => value.toFixed(6))),
+          texttemplate: "%{text}",
+          hoverinfo: "z",
         });
+      })
+      .catch((error) => {
+        console.error("Error fetching correlation matrix data:", error);
+        setError(error.message); // Lưu thông báo lỗi vào state
       });
   }, []);
 
   if (!correlationData) return <div>Loading...</div>;
 
   return (
-    <div>
+    <div className="chart-item">
       <h2>Biểu đồ Correlation Matrix</h2>
       <Plot
         data={[correlationData]}

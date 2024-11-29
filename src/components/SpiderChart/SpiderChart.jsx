@@ -1,94 +1,129 @@
 import React, { useEffect, useState } from "react";
 import Plot from "react-plotly.js";
-import Papa from "papaparse";
 
 const SpiderChart = () => {
   const [seasonalDataByYear, setSeasonalDataByYear] = useState([]);
 
   useEffect(() => {
-    Papa.parse("/seasonal_averages_by_year.csv", {
-      download: true,
-      header: true,
-      complete: (result) => {
-        const csvData = result.data.filter((row) => row.Year); // Lọc ra các dòng có giá trị hợp lệ
-        setSeasonalDataByYear(csvData);
-      },
-    });
+    fetch("http://localhost:8000/api/seasons/chart")
+      .then((response) => response.json())
+      .then((data) => setSeasonalDataByYear(data))
+      .catch((error) => console.error("Error fetching seasons data:", error));
   }, []);
 
-  // Tạo danh sách màu sắc để dùng cho từng năm
+  // Colors for the year with increased transparency
   const colors = [
-    "rgba(31, 119, 180, 0.7)",
-    "rgba(255, 127, 14, 0.7)",
-    "rgba(44, 160, 44, 0.7)",
-    "rgba(214, 39, 40, 0.7)",
-    "rgba(148, 103, 189, 0.7)",
+    "rgba(255, 193, 7, 0.4)", // Yellow
+    "rgba(76, 175, 80, 0.4)", // Green
+    "rgba(156, 39, 176, 0.4)", // Purple
+    "rgba(100, 181, 246, 0.4)", // Light Blue
+    "rgba(255, 82, 82, 0.4)", // Soft Red
   ];
 
   return (
-    <div>
-      <h2>
-        Biểu đồ Seasonal - Lượng nhập khẩu trung bình theo mùa (2020-2024)
-      </h2>
+    <div className="chart-item">
+      <h2>Biểu đồ Spider - Số ngày theo mùa</h2>
+
+      {/* First row: All 6 charts displayed evenly */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
+          gridTemplateColumns: "repeat(3, 1fr)",
           gap: "20px",
+          marginBottom: "20px",
         }}
       >
+        {/* Combined SpiderChart for all years */}
+        <Plot
+          data={seasonalDataByYear.map((yearData, index) => ({
+            type: "scatterpolar",
+            r: [
+              parseInt(yearData.High),
+              parseInt(yearData.Medium),
+              parseInt(yearData.Low),
+              parseInt(yearData["Very low"]),
+            ],
+            theta: ["Very Low", "Low", "Medium", "High"],
+            fill: "toself",
+            name: `Năm ${yearData.year}`,
+            marker: { color: colors[index % colors.length], size: 10 },
+            line: {
+              color: colors[index % colors.length],
+              width: 2,
+            },
+          }))}
+          layout={{
+            polar: {
+              radialaxis: {
+                visible: true,
+                tickangle: 45,
+                tickfont: { size: 14 },
+                gridcolor: "rgba(229, 236, 246, 1)",
+              },
+              angularaxis: {
+                tickfont: { size: 16 },
+                rotation: 0,
+              },
+            },
+            showlegend: true,
+            title: {
+              text: "Dữ liệu theo mùa - Tất cả các năm",
+              font: { size: 18 },
+            },
+            width: 440,
+            height: 440,
+            plot_bgcolor: "rgba(229, 236, 246, 1)",
+            paper_bgcolor: "white",
+          }}
+        />
+
+        {/* Individual SpiderCharts for each year */}
         {seasonalDataByYear.map((yearData, index) => (
-          <div key={yearData.Year}>
-            <Plot
-              data={[
-                {
-                  type: "scatterpolar",
-                  r: [
-                    parseFloat(yearData.Spring),
-                    parseFloat(yearData.Summer),
-                    parseFloat(yearData.Fall),
-                    parseFloat(yearData.Winter),
-                  ],
-                  theta: ["Spring", "Summer", "Fall", "Winter"],
-                  fill: "toself",
-                  name: `Năm ${yearData.Year}`,
-                  marker: { color: colors[index % colors.length] }, // Màu sắc biểu đồ theo năm
+          <Plot
+            key={yearData.year}
+            data={[
+              {
+                type: "scatterpolar",
+                r: [
+                  parseInt(yearData.High),
+                  parseInt(yearData.Medium),
+                  parseInt(yearData.Low),
+                  parseInt(yearData["Very low"]),
+                ],
+                theta: ["Very low", "Low", "Medium", "High"],
+                fill: "toself",
+                name: `Năm ${yearData.year}`,
+                marker: { color: colors[index % colors.length], size: 10 },
+                line: {
+                  color: colors[index % colors.length],
+                  width: 4,
                 },
-              ]}
-              layout={{
-                polar: {
-                  radialaxis: {
-                    visible: true,
-                    range: [
-                      0,
-                      Math.max(
-                        parseFloat(yearData.Spring),
-                        parseFloat(yearData.Summer),
-                        parseFloat(yearData.Fall),
-                        parseFloat(yearData.Winter)
-                      ),
-                    ],
-                    tickangle: 45, // Điều chỉnh tickangle để dễ đọc hơn
-                    tickfont: { size: 14 },
-                    showline: true, // Thêm đường cho trục
-                    gridcolor: "lightgray", // Màu sắc của các đường lưới
-                  },
-                  angularaxis: {
-                    tickfont: { size: 16 },
-                    rotation: 0, // Xoay trục để cân chỉnh
-                  },
+              },
+            ]}
+            layout={{
+              polar: {
+                radialaxis: {
+                  visible: true,
+                  tickangle: 45,
+                  tickfont: { size: 14 },
+                  gridcolor: "rgba(229, 236, 246, 1)",
                 },
-                showlegend: false,
-                title: {
-                  text: `Lượng Nhập Khẩu Trung Bình Theo Mùa - ${yearData.Year}`,
-                  font: { size: 18 },
+                angularaxis: {
+                  tickfont: { size: 16 },
+                  rotation: 0,
                 },
-                width: 600,
-                height: 600,
-                margin: { t: 40, b: 40 },
-              }}
-            />
-          </div>
+              },
+              showlegend: true,
+              title: {
+                text: `Dữ liệu theo mùa - ${yearData.year}`,
+                font: { size: 18 },
+              },
+              width: 440,
+              height: 440,
+              plot_bgcolor: "rgba(229, 236, 246, 1)",
+              paper_bgcolor: "white",
+            }}
+          />
         ))}
       </div>
     </div>

@@ -1,0 +1,14 @@
+.legend {
+    width: 120px;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    padding: 8px;
+
+    & li {
+        margin-top: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+}
