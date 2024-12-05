@@ -14,9 +14,9 @@ const ClusteringChart = () => {
   };
 
   const clusterColors = {
-    3: "#440154",
-    2: "#31688D",
-    1: "#FDE725",
+    1: "#440154",
+    3: "#31688D",
+    2: "#FDE725",
     0: "#36B778",
   };
 
@@ -47,11 +47,11 @@ const ClusteringChart = () => {
               // color: clusterData.map((item) => clusterColors[item.cluster]),
               color: clusterData.map((item) => item.cluster),
               colorscale: "Viridis",
-              colorbar: {
-                tickvals: [0, 1, 2, 3],
-                ticktext: ["Very low", "Low", "Medium", "High"],
-                title: "Cluster Level",
-              },
+              // colorbar: {
+              //   tickvals: [0, 1, 2, 3],
+              //   ticktext: ["Very low", "Low", "Medium", "High"],
+              //   title: "Cluster Level",
+              // },
             },
           },
         ]}
@@ -68,7 +68,7 @@ const ClusteringChart = () => {
           height: 600,
         }}
       />
-      {/* <ul className="legend">
+      <ul className="legend">
         {Object.entries(clusterLabels).map(([key, label]) => (
           <li key={key}>
             <span
@@ -82,7 +82,7 @@ const ClusteringChart = () => {
             {label}
           </li>
         ))}
-      </ul> */}
+      </ul>
     </div>
   );
 };

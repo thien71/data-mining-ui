@@ -7,6 +7,7 @@ import SpiderChart from "../../components/SpiderChart/SpiderChart";
 import ClusteringChart from "../../components/ClusteringChart/ClusteringChart";
 
 import "./HomePage.scss";
+import PredictionsChart from "../../components/PredictionsChart/PredictionsChart";
 
 const HomePage = () => {
   return (
@@ -24,6 +25,7 @@ const HomePage = () => {
           <CorrelationMatrixChart />
           <ClusteringChart />
           <SpiderChart />
+          <PredictionsChart />
         </div>
       </main>
     </div>
